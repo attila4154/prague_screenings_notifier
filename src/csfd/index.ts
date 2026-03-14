@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
-import type { Result } from "../utils/result.ts";
-import { wrapNullableInResult } from "../utils/result.ts";
-import { enumerate } from "../utils/enumerate.ts";
+import type { Result } from "../utils/result";
+import { wrapNullableInResult } from "../utils/result";
+import { enumerate } from "../utils/enumerate";
 
 const URL = "https://www.csfd.cz/en/cinema/1-praha/?period=week";
 
