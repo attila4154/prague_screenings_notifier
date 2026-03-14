@@ -24,7 +24,10 @@ export async function fetchScreenings(): Promise<Result<string>> {
 }
 
 function getCinemaName(cinemaSection: Element) {
-  const cinemaName = cinemaSection.querySelector("h2")?.textContent.trim();
+  const cinemaName = cinemaSection
+    .querySelector("h2")
+    ?.textContent.trim()
+    .split("Prague - ")[1];
 
   return wrapNullableInResult(cinemaName);
 }
