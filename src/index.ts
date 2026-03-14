@@ -1,8 +1,8 @@
 import Fastify from "fastify";
 
-import { fetchScreenings, parseScreenings, type FlatScreening } from "./csfd/index";
-import { timeExecution } from "./utils/time";
-import { findScreenings } from "./gemini/gemini";
+import { fetchScreenings, parseScreenings, type FlatScreening } from "./csfd/index.js";
+import { timeExecution } from "./utils/time.js";
+import { findScreenings } from "./gemini/gemini.js";
 
 const fastify = Fastify({ logger: true });
 
