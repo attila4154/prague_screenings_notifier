@@ -41,6 +41,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
   },
+  // src https://stackoverflow.com/a/75990537
   "ts-node": {
     "esm": true,
     "compilerOptions": {
