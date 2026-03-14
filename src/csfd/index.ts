@@ -1,8 +1,9 @@
 import { JSDOM } from "jsdom";
 import type { Result } from "../utils/result.ts";
 import { wrapNullableInResult } from "../utils/result.ts";
+import { enumerate } from "../utils/enumerate.ts";
 
-const URL = "https://www.csfd.cz/en/cinema/1-praha/";
+const URL = "https://www.csfd.cz/en/cinema/1-praha/?period=week";
 
 export type FlatScreening = {
   cinema: string;
@@ -32,14 +33,28 @@ function getCinemaName(cinemaSection: Element) {
   return wrapNullableInResult(cinemaName);
 }
 
-function getDate(cinemaSection: Element): Result<string, string> {
-  const date = cinemaSection
-    .querySelector(".update-box-sub-header")
-    ?.textContent.trim()
-    .split("\t")[0]!
-    .trim();
+function getDateScreeningRows(
+  cinemaSection: Element,
+): Result<[string, Element][], string> {
+  const dateRows = [
+    ...cinemaSection.querySelectorAll(".update-box-sub-header"),
+  ];
+  const dateScreeningRows = [
+    ...cinemaSection.querySelectorAll(".box-content-table-cinema"),
+  ];
 
-  return wrapNullableInResult(date);
+  if (dateRows.length !== dateScreeningRows.length) {
+    return [
+      `Date rows number mismatch: ${{ dates: dateRows.length, datesScreenings: dateScreeningRows.length }}`,
+      null,
+    ];
+  }
+
+  const dates = dateRows.map((d) =>
+    d.textContent.trim().split("\t")[0]!.trim(),
+  );
+
+  return [null, enumerate(dates, dateScreeningRows)];
 }
 
 function getFilmName(screeningRow: Element) {
@@ -70,39 +85,41 @@ export function parseScreenings(html: string): {
   }
 
   for (const cinemaSection of cinemaSections) {
-    const screeningsRows = cinemaSection.querySelectorAll("tr");
-
     const [cinemaErr, cinema] = getCinemaName(cinemaSection);
-    const [dateErr, date] = getDate(cinemaSection);
-
     if (cinemaErr) {
       logs.push("Warn: Could not find ciname name - skipping it");
     }
-    if (dateErr) {
-      logs.push("Warn: Could not find date - skipping it");
-    }
-
-    if (cinemaErr || dateErr) {
+    const [sErr, dateScreeningRowsPairs] = getDateScreeningRows(cinemaSection);
+    if (sErr) {
+      logs.push(`Warn: Could not get dates for ${{ cinema }}, error: ${sErr}`);
       continue;
     }
 
-    for (const screeningsRow of screeningsRows) {
-      const [filmErr, filmName] = getFilmName(screeningsRow);
-      if (filmErr) {
-        logs.push(
-          `Warn: Could not get film name for ${{ cinema, date }} - skipping it`,
-        );
-        continue;
-      }
+    if (cinemaErr) {
+      continue;
+    }
 
-      const times = getTimes(screeningsRow);
-      for (const time of times) {
-        screenings.push({
-          cinema: cinema!,
-          date: date!,
-          time,
-          filmName: filmName!,
-        });
+    for (const [date, screeningRowsBlock] of dateScreeningRowsPairs!) {
+      const screeningRows = screeningRowsBlock.querySelectorAll('tr');
+
+      for (const screeningRow of screeningRows) {
+        const [filmErr, filmName] = getFilmName(screeningRow);
+        if (filmErr) {
+          logs.push(
+            `Warn: Could not get film name for ${{ cinema, date }} - skipping it`,
+          );
+          continue;
+        }
+
+        const times = getTimes(screeningRow);
+        for (const time of times) {
+          screenings.push({
+            cinema: cinema!,
+            date: date!,
+            time,
+            filmName: filmName!,
+          });
+        }
       }
     }
   }
