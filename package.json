@@ -5,6 +5,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
+  "main": "server.ts",
   "scripts": {
     "start": "node --env-file=.env src/index.ts",
     "format": "prettier src/ --write"
