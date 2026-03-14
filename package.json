@@ -1,0 +1,25 @@
+{
+  "name": "cinema_notifier",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "format": "prettier src/ --write"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/jsdom": "^28.0.0",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "prettier": "3.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
+  },
+  "dependencies": {
+    "jsdom": "^28.1.0"
+  }
+}
