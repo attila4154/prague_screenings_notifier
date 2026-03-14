@@ -1,5 +1,4 @@
-import { fetchScreenings, parseScreenings} from "./csfd/index.ts";
-
+import { fetchScreenings, parseScreenings } from "./csfd/index.ts";
 
 async function main() {
   const [fetchError, html] = await fetchScreenings();
@@ -8,8 +7,9 @@ async function main() {
     return;
   }
 
-  const screenings = parseScreenings(html);
+  const { screenings, logs } = parseScreenings(html);
   console.log(screenings);
+  console.log(logs);
 }
 
 main();
