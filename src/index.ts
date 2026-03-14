@@ -1,22 +1,12 @@
-import { GoogleGenAI } from "@google/genai";
+import Fastify from "fastify";
 
-import { fetchScreenings, parseScreenings } from "./csfd/index.ts";
+import { fetchScreenings, parseScreenings, type FlatScreening } from "./csfd/index.ts";
 import { timeExecution } from "./utils/time.ts";
+import { findScreenings } from "./gemini/gemini.ts";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
+const fastify = Fastify({ logger: true });
 
-async function main() {
-  const [fetchError, html] = await fetchScreenings();
-  if (fetchError !== null) {
-    console.log("error while fetching screenings", fetchError);
-    return;
-  }
-
-  const { screenings, logs, time } = timeExecution(() => parseScreenings(html));
-  // console.log(screenings);
-  console.log({ logs });
-  console.log(`parsing took ${time}mls`);
-
+function filterScreenings(screenings: FlatScreening[]) {
   const filtered = screenings
     .filter((s) => !s.cinema.startsWith("CineStar"))
     .filter((s) => !s.cinema.startsWith("Premier Cinemas"))
@@ -25,18 +15,21 @@ async function main() {
         !(s.cinema.startsWith("Cinema City") && !s.cinema.includes("Flora")),
     );
 
-  // The client gets the API key from the environment variable `GEMINI_API_KEY`.
-    console.log({GEMINI_API_KEY});
-  const gemini = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-  const response = await gemini.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents:
-      "I want you to choose an interesting screenings for me. Focus primarily on older movies, they should be pretty rare. In case of newer ones, focus on non-mainstream but also don't be very picky, I enjoy stuff like Marvel too from time to time. I just want to know what stuff appears in cinemas to get updates. Output them as title, cinema, date and time. Keep your wording consice - don't mention anything personal, it can be used for other people too, but if you still feel like describing a movie please do so. Here are the screenings: " +
-      `${JSON.stringify(screenings)}`,
-  });
-  console.log(response.text);
-  // console.log(filtered.slice(-100))
+    return filtered;
 }
 
-main();
+fastify.get("/test", async (request, reply) => {
+  const [fetchError, html] = await fetchScreenings();
+  if (fetchError !== null) {
+    request.log.error(fetchError, "error while fetching screenings");
+    return reply.send("unexpected error, please try again");
+  }
+
+  const { screenings } = timeExecution(() => parseScreenings(html));
+  const filtered = filterScreenings(screenings);
+  const message = await findScreenings(filtered);
+
+  return reply.send(message.text);
+});
+
+fastify.listen({ port: 3000 });
