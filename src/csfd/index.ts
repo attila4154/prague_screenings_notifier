@@ -56,11 +56,10 @@ export function parseScreenings(html: string) {
   const cinemaSections = document.querySelectorAll(".updated-box-cinema");
 
   for (const cinemaSection of cinemaSections) {
-    const cinemaName = getCinemaName(cinemaSection);
-
-    const date = getDate(cinemaSection);
-
     const screeningsRows = cinemaSection.querySelectorAll("tr");
+
+    const cinemaName = getCinemaName(cinemaSection);
+    const date = getDate(cinemaSection);
 
     for (const screeningsRow of screeningsRows) {
       const filmName = getFilmName(screeningsRow);
