@@ -11,6 +11,7 @@ export async function sendMessage(chatId: any, text: string, logger: FastifyBase
     body: JSON.stringify({
       chat_id: chatId,
       text,
+      parse_mode: 'Markdown',
     }),
   });
 
