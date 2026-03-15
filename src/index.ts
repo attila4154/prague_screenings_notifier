@@ -51,7 +51,7 @@ fastify.post("/telegram/webhook/asdfasdwerqwe", async (request, reply) => {
   }
 
   if (text !== "/test") {
-    telegram.sendMessage(chatId, "Wrong command", request.log);
+    await telegram.sendMessage(chatId, "Wrong command", request.log);
     return reply.send({ ok: true });
   }
 
@@ -59,13 +59,13 @@ fastify.post("/telegram/webhook/asdfasdwerqwe", async (request, reply) => {
   const [fetchError, html] = await fetchScreenings();
   if (fetchError !== null) {
     request.log.error(fetchError, "error while fetching screenings");
-    return reply.send("unexpected error, please try again");
+    return reply.send({ ok: true });
   }
   const { screenings } = timeExecution(() => parseScreenings(html));
   const filtered = filterScreenings(screenings);
   request.log.info(`Found ${filtered.length} screenings`);
   const message = await findScreenings(filtered);
-  telegram.sendMessage(chatId, message.text!, request.log);
+  await telegram.sendMessage(chatId, message.text!, request.log);
 
   return reply.send({ ok: true });
 });
