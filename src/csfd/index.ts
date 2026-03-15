@@ -35,7 +35,7 @@ function getCinemaName(cinemaSection: HTMLElement) {
 
 function getDateScreeningRows(
   cinemaSection: HTMLElement,
-): Result<[string, Element][], string> {
+): Result<[string, HTMLElement][], string> {
   const dateRows = [
     ...cinemaSection.querySelectorAll(".update-box-sub-header"),
   ];
@@ -57,13 +57,13 @@ function getDateScreeningRows(
   return [null, enumerate(dates, dateScreeningRows)];
 }
 
-function getFilmName(screeningRow: Element) {
+function getFilmName(screeningRow: HTMLElement) {
   const filmName = screeningRow.querySelector("a.film-title-name")?.textContent;
 
   return wrapNullableInResult(filmName);
 }
 
-function getTimes(screeningRow: Element) {
+function getTimes(screeningRow: HTMLElement) {
   return [...screeningRow.querySelectorAll(".td-time")].map((t) =>
     t.textContent.trim(),
   );
