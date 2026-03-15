@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { parse, type HTMLElement } from "node-html-parser";
 import type { Result } from "../utils/result.js";
 import { wrapNullableInResult } from "../utils/result.js";
 import { enumerate } from "../utils/enumerate.js";
@@ -24,7 +24,7 @@ export async function fetchScreenings(): Promise<Result<string>> {
   return [null, text];
 }
 
-function getCinemaName(cinemaSection: Element) {
+function getCinemaName(cinemaSection: HTMLElement) {
   const cinemaName = cinemaSection
     .querySelector("h2")
     ?.textContent.trim()
@@ -34,7 +34,7 @@ function getCinemaName(cinemaSection: Element) {
 }
 
 function getDateScreeningRows(
-  cinemaSection: Element,
+  cinemaSection: HTMLElement,
 ): Result<[string, Element][], string> {
   const dateRows = [
     ...cinemaSection.querySelectorAll(".update-box-sub-header"),
@@ -73,12 +73,12 @@ export function parseScreenings(html: string): {
   screenings: FlatScreening[];
   logs: string[];
 } {
-  const document = new JSDOM(html).window.document;
+  const root = parse(html);
 
   const screenings: FlatScreening[] = [];
   const logs: string[] = [];
 
-  const cinemaSections = [...document.querySelectorAll(".updated-box-cinema")];
+  const cinemaSections = [...root.querySelectorAll(".updated-box-cinema")];
   if (!cinemaSections.length) {
     logs.push("Error: No cinema sections found - returning empty list");
     return { screenings, logs };
@@ -100,7 +100,7 @@ export function parseScreenings(html: string): {
     }
 
     for (const [date, screeningRowsBlock] of dateScreeningRowsPairs!) {
-      const screeningRows = screeningRowsBlock.querySelectorAll('tr');
+      const screeningRows = screeningRowsBlock.querySelectorAll("tr");
 
       for (const screeningRow of screeningRows) {
         const [filmErr, filmName] = getFilmName(screeningRow);
