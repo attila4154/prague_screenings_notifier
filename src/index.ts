@@ -7,7 +7,7 @@ import {
 } from "./csfd/index.js";
 import { timeExecution } from "./utils/time.js";
 import { findScreenings } from "./gemini/gemini.js";
-import * as telegram from './telegram/telegram.js';
+import * as telegram from "./telegram/telegram.js";
 
 const fastify = Fastify({ logger: true });
 
@@ -42,11 +42,11 @@ fastify.post("/telegram/webhook/asdfasdwerqwe", async (request, reply) => {
   request.log.info(request.body);
 
   const chatId = updateMessage?.message?.chat?.id;
-  const messageId = updateMessage?.message?.id;
   const text = updateMessage?.message?.text;
 
-  if (!chatId || !messageId || !text) {
-    request.log.error("something went wrong");
+  if (!chatId || !text) {
+    request.log.error({ chatId, text }, "something went wrong");
+    telegram.sendMessage(chatId, "Something went wrong", request.log);
     return reply.send({ ok: true });
   }
 
